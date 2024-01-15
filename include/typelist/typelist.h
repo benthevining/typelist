@@ -74,14 +74,12 @@ struct TypeErasedUnaryPredicate final
 /*-----------------------------------------------------------*/
 
 template <class LHS, class RHS>
-struct are_same final : std::false_type
-{
-};
+struct are_same final : std::false_type {};
 
-template <template <typename...> class LHS, template <typename...> class RHS, typename... Args>
-struct are_same<LHS<Args...>, RHS<Args...>> final : std::true_type
-{
-};
+template <template <typename...> class LHS, 
+		  template <typename...> class RHS, 
+		  typename... Args>
+struct are_same<LHS<Args...>, RHS<Args...>> final : std::true_type {};
 
 template <class LHS, class RHS>
 static constexpr const bool are_same_v = are_same<LHS, RHS>::value;
@@ -89,16 +87,17 @@ static constexpr const bool are_same_v = are_same<LHS, RHS>::value;
 /*-----------------------------------------------------------*/
 
 template <class Typelist, typename... TypesToFind>
-struct contains final
+class contains final
 {
-private:
 	template <class TypeList, typename TypeToFind>
 	struct contains_one;
 
-	template <template <typename...> class TypeList, typename TypeToFind, typename... Args>
-	struct contains_one<TypeList<Args...>, TypeToFind> final : std::bool_constant<(std::is_same_v<TypeToFind, Args> || ...)>
-	{
-	};
+	template <template <typename...> class TypeList, 
+			  typename TypeToFind, 
+			  typename... Args>
+	struct contains_one<TypeList<Args...>, TypeToFind> final 
+		: std::bool_constant<(std::is_same_v<TypeToFind, Args> || ...)>
+	{};
 
 public:
 	static constexpr const bool value = (contains_one<Typelist, TypesToFind>::value && ...);
@@ -118,14 +117,11 @@ static constexpr const bool contains_or_v = contains_or<Typelist, TypesToFind...
 /*-----------------------------------------------------------*/
 
 template <class Typelist>
-struct size final : SizeConstant<0>
-{
-};
+struct size final : SizeConstant<0> {};
 
-template <template <typename...> class Typelist, typename... Args>
-struct size<Typelist<Args...>> final : SizeConstant<sizeof...(Args)>
-{
-};
+template <template <typename...> class Typelist, 
+		  typename... Args>
+struct size<Typelist<Args...>> final : SizeConstant<sizeof...(Args)> {};
 
 template <class Typelist>
 static constexpr const size_t size_v = size<Typelist>::value;
@@ -138,7 +134,9 @@ static constexpr const bool is_empty = (size_v<Typelist> == 0);
 template <class Typelist, typename... TypesToAdd>
 struct add;
 
-template <template <typename...> class Typelist, typename... TypesToAdd, typename... Args>
+template <template <typename...> class Typelist, 
+		  typename... TypesToAdd, 
+		  typename... Args>
 struct add<Typelist<Args...>, TypesToAdd...> final
 {
 	using type = Typelist<Args..., TypesToAdd...>;
@@ -152,7 +150,10 @@ using add_t = typename add<Typelist, TypesToAdd...>::type;
 template <class List1, class List2>
 struct add_from;
 
-template <template <typename...> class List1, template <typename...> class List2, typename... List1Args, typename... List2Args>
+template <template <typename...> class List1, 
+		  template <typename...> class List2, 
+		  typename... List1Args, 
+		  typename... List2Args>
 struct add_from<List1<List1Args...>, List2<List2Args...>> final
 {
 	using type = List1<List1Args..., List2Args...>;
@@ -164,12 +165,13 @@ using add_from_t = typename add_from<List1, List2>::type;
 /*-----------------------------------------------------------*/
 
 template <class Typelist, typename... TypesToAdd>
-struct addIfAbsent;
+class addIfAbsent;
 
-template <template <typename...> class Typelist, typename... TypesToAdd, typename... Args>
-struct addIfAbsent<Typelist<Args...>, TypesToAdd...> final
+template <template <typename...> class Typelist, 
+		  typename... TypesToAdd, 
+		  typename... Args>
+class addIfAbsent<Typelist<Args...>, TypesToAdd...> final
 {
-private:
 	template <class ListType, typename Type>
 	using add_one = std::conditional_t<
 		(! contains_v<Typelist<Args...>, Type>),
@@ -179,7 +181,9 @@ private:
 	template <class ListType, typename... ListArgs>
 	struct adder;
 
-	template <class ListType, typename First, typename... Others>
+	template <class ListType, 
+			  typename First, 
+			  typename... Others>
 	struct adder<ListType, First, Others...> final
 	{
 		using type = typename adder<
@@ -203,12 +207,14 @@ using addIfAbsent_t = typename addIfAbsent<Typelist, TypesToAdd...>::type;
 /*-----------------------------------------------------------*/
 
 template <class List1, class List2>
-struct common_with;
+class common_with;
 
-template <template <typename...> class List1, template <typename...> class List2, typename... List1Types, typename... List2Types>
-struct common_with<List1<List1Types...>, List2<List2Types...>> final
+template <template <typename...> class List1, 
+		  template <typename...> class List2, 
+		  typename... List1Types, 
+		  typename... List2Types>
+class common_with<List1<List1Types...>, List2<List2Types...>> final
 {
-private:
 	template <class NewList, typename Type>
 	using conditional_add = std::conditional_t<
 		contains_v<List2<List2Types...>, Type>,
@@ -218,7 +224,9 @@ private:
 	template <class NewList, typename... Types>
 	struct builder;
 
-	template <class NewList, typename First, typename... Others>
+	template <class NewList, 
+			  typename First, 
+			  typename... Others>
 	struct builder<NewList, First, Others...> final
 	{
 		using type = typename builder<
@@ -242,12 +250,14 @@ using common_t = typename common_with<List1, List2>::type;
 /*-----------------------------------------------------------*/
 
 template <class List1, class List2>
-struct not_in;
+class not_in;
 
-template <template <typename...> class List1, template <typename...> class List2, typename... List1Types, typename... List2Types>
-struct not_in<List1<List1Types...>, List2<List2Types...>> final
+template <template <typename...> class List1, 
+		  template <typename...> class List2, 
+		  typename... List1Types, 
+		  typename... List2Types>
+class not_in<List1<List1Types...>, List2<List2Types...>> final
 {
-private:
 	template <class NewList, typename Type>
 	using conditional_add = std::conditional_t<
 		contains_v<List2<List2Types...>, Type>,
@@ -257,7 +267,9 @@ private:
 	template <class NewList, typename... Types>
 	struct builder;
 
-	template <class NewList, typename First, typename... Others>
+	template <class NewList, 
+			  typename First, 
+			  typename... Others>
 	struct builder<NewList, First, Others...> final
 	{
 		using type = typename builder<
@@ -279,17 +291,20 @@ template <class List1, class List2>
 using not_in_t = typename not_in<List1, List2>::type;
 
 template <class List1, class List2>
-static constexpr const bool same_ignoring_order_v = is_empty<not_in_t<List1, List2>> && is_empty<not_in_t<List2, List1>>;
+static constexpr const bool same_ignoring_order_v = is_empty<not_in_t<List1, List2>> 
+												 && is_empty<not_in_t<List2, List1>>;
 
 /*-----------------------------------------------------------*/
 
 template <class Typelist, size_t Index, typename ToInsert>
-struct insert_at;
+class insert_at;
 
-template <template <typename...> class Typelist, size_t Index, typename ToInsert, typename... Args>
-struct insert_at<Typelist<Args...>, Index, ToInsert> final
+template <template <typename...> class Typelist, 
+		  size_t Index, 
+		  typename ToInsert, 
+		  typename... Args>
+class insert_at<Typelist<Args...>, Index, ToInsert> final
 {
-private:
 	static_assert (Index <= size_v<Typelist<Args...>>, "Insertion index in type list is out of bounds!");
 
 	template <size_t CurrentIndex, class ListType, typename Type>
@@ -301,10 +316,17 @@ private:
 	template <size_t CurrentIndex, class ListType, typename... ListArgs>
 	struct rebuilder;
 
-	template <size_t CurrentIndex, class ListType, typename First, typename... Others>
+	template <size_t CurrentIndex, 
+			  class ListType, 
+			  typename First, 
+			  typename... Others>
 	struct rebuilder<CurrentIndex, ListType, First, Others...> final
 	{
-		using type = typename rebuilder<CurrentIndex + 1, inserter<CurrentIndex, ListType, First>, Others...>::type;
+		using type = typename rebuilder<
+			CurrentIndex + 1, 
+			inserter<CurrentIndex, ListType, First>, 
+			Others...>
+		::type;
 	};
 
 	template <size_t CurrentIndex, class ListType, typename First>
@@ -330,12 +352,13 @@ using append_t = add_t<Typelist, ToAppend>;
 /*-----------------------------------------------------------*/
 
 template <class Typelist, size_t Index>
-struct get;
+class get;
 
-template <template <typename...> class Typelist, size_t Index, typename... Args>
-struct get<Typelist<Args...>, Index> final
+template <template <typename...> class Typelist, 
+		  size_t Index, 
+		  typename... Args>
+class get<Typelist<Args...>, Index> final
 {
-private:
 	static_assert (Index <= size_v<Typelist<Args...>>, "Search index in type list is out of bounds!");
 
 	template <size_t SearchIndex, typename First, typename... Others>
@@ -372,29 +395,31 @@ using get_last_t = get_t<Typelist, size_v<Typelist> - 1>;
 /*-----------------------------------------------------------*/
 
 template <class Typelist, typename TypeToFind>
-struct find;
+class find;
 
-template <template <typename...> class Typelist, typename TypeToFind, typename... Args>
-struct find<Typelist<Args...>, TypeToFind> final
+template <template <typename...> class Typelist, 
+		  typename TypeToFind, 
+		  typename... Args>
+class find<Typelist<Args...>, TypeToFind> final
 {
-private:
 	static_assert (contains_v<Typelist<Args...>, TypeToFind>,
 				   "TypeToFind is not in the Typelist!");
 
 	template <size_t Index, typename... Types>
 	struct finder;
 
-	template <size_t Index, typename First, typename... Others>
-	struct finder<Index, First, Others...> final : SizeConstant<std::conditional_t<std::is_same_v<First, TypeToFind>,
-																				   std::integral_constant<size_t, Index>,
-																				   finder<Index + 1, Others...>>::value>
-	{
-	};
+	template <size_t Index, 
+			  typename First, 
+			  typename... Others>
+	struct finder<Index, First, Others...> final 
+		: SizeConstant<std::conditional_t<
+			std::is_same_v<First, TypeToFind>,
+			std::integral_constant<size_t, Index>,
+			finder<Index + 1, Others...>>::value>
+	{};
 
 	template <size_t Index, typename First>
-	struct finder<Index, First> final : SizeConstant<Index>
-	{
-	};
+	struct finder<Index, First> final : SizeConstant<Index> {};
 
 public:
 	static constexpr const size_t value = finder<0, Args...>::value;
@@ -406,17 +431,21 @@ static constexpr const size_t find_v = find<Typelist, TypeToFind>::value;
 /*-----------------------------------------------------------*/
 
 template <class Typelist, typename... TypesToRemove>
-struct remove;
+class remove;
 
-template <template <typename...> class Typelist, typename... TypesToRemove, typename... Args>
-struct remove<Typelist<Args...>, TypesToRemove...>
+template <template <typename...> class Typelist, 
+		  typename... TypesToRemove, 
+		  typename... Args>
+class remove<Typelist<Args...>, TypesToRemove...>
 {
-private:
 	template <typename Type>
 	static constinit const bool isTypeAbsent = (! std::is_same_v<TypesToRemove, Type> && ...);
 
 	template <class ListType, typename Type>
-	using remove_one = std::conditional_t<isTypeAbsent<Type>, add_t<ListType, Type>, ListType>;
+	using remove_one = std::conditional_t<
+		isTypeAbsent<Type>, 
+		add_t<ListType, Type>, 
+		ListType>;
 
 	template <class ListType, typename... ListArgs>
 	struct remover;
@@ -448,21 +477,28 @@ using remove_null_types_t = remove_t<Typelist, meta::NullType>;
 /*-----------------------------------------------------------*/
 
 template <class Typelist, size_t Index>
-struct remove_at;
+class remove_at;
 
-template <template <typename...> class Typelist, size_t Index, typename... Args>
-struct remove_at<Typelist<Args...>, Index> final
+template <template <typename...> class Typelist, 
+		  size_t Index, 
+		  typename... Args>
+class remove_at<Typelist<Args...>, Index> final
 {
-private:
 	static_assert (Index <= size_v<Typelist<Args...>>, "Cannot remove item out of range of TypeList!");
 
 	template <size_t CurrentIndex, class ListType, typename Type>
-	using do_remove = std::conditional_t<CurrentIndex == Index, ListType, add_t<ListType, Type>>;
+	using do_remove = std::conditional_t<
+		CurrentIndex == Index, 
+		ListType, 
+		add_t<ListType, Type>>;
 
 	template <size_t CurrentIndex, class ListType, typename... ListArgs>
 	struct remover;
 
-	template <size_t CurrentIndex, class ListType, typename First, typename... Others>
+	template <size_t CurrentIndex, 
+			  class ListType, 
+			  typename First, 
+			  typename... Others>
 	struct remover<CurrentIndex, ListType, First, Others...> final
 	{
 		using type = typename remover<
@@ -487,12 +523,13 @@ using remove_at_t = typename remove_at<Typelist, Index>::type;
 /*-----------------------------------------------------------*/
 
 template <class Typelist, template <typename> class UnaryPredicate>
-struct remove_if;
+class remove_if;
 
-template <template <typename...> class Typelist, template <typename> class UnaryPredicate, typename... Args>
-struct remove_if<Typelist<Args...>, UnaryPredicate> final
+template <template <typename...> class Typelist, 
+		  template <typename> class UnaryPredicate, 
+		  typename... Args>
+class remove_if<Typelist<Args...>, UnaryPredicate> final
 {
-private:
 	using Condition = TypeErasedUnaryPredicate<UnaryPredicate>;
 
 	template <class TypeList, typename Type>
@@ -527,12 +564,13 @@ using remove_if_t = typename remove_if<Typelist, UnaryPredicate>::type;
 /*-----------------------------------------------------------*/
 
 template <class Typelist, template <typename> class UnaryPredicate>
-struct remove_if_not;
+class remove_if_not;
 
-template <template <typename...> class Typelist, template <typename> class UnaryPredicate, typename... Args>
-struct remove_if_not<Typelist<Args...>, UnaryPredicate> final
+template <template <typename...> class Typelist, 
+		  template <typename> class UnaryPredicate, 
+		  typename... Args>
+class remove_if_not<Typelist<Args...>, UnaryPredicate> final
 {
-private:
 	using Condition = TypeErasedUnaryPredicate<UnaryPredicate>;
 
 	template <class TypeList, typename Type>
@@ -567,16 +605,23 @@ using remove_if_not_t = typename remove_if_not<Typelist, UnaryPredicate>::type;
 /*-----------------------------------------------------------*/
 
 template <class Typelist, typename ToReplace, typename ReplaceWith>
-struct replace;
+class replace;
 
-template <template <typename...> class Typelist, typename ToReplace, typename ReplaceWith, typename... Args>
-struct replace<Typelist<Args...>, ToReplace, ReplaceWith> final
+template <template <typename...> class Typelist, 
+		  typename ToReplace, 
+		  typename ReplaceWith, 
+		  typename... Args>
+class replace<Typelist<Args...>, ToReplace, ReplaceWith> final
 {
-private:
 	static_assert (contains_v<Typelist<Args...>, ToReplace>, "Cannot replace type not in Typelist!");
 
 	template <class TypeList, typename First, typename InPlaceType>
-	using do_replace = add_t<TypeList, std::conditional_t<std::is_same_v<First, ToReplace>, InPlaceType, First>>;
+	using do_replace = add_t<
+		TypeList, 
+		std::conditional_t<
+			std::is_same_v<First, ToReplace>, 
+			InPlaceType, 
+			First>>;
 
 	template <class TypeList, typename InPlaceType, typename...>
 	struct replacer;
@@ -587,7 +632,10 @@ private:
 		using type = do_replace<TypeList, First, InPlaceType>;
 	};
 
-	template <class TypeList, typename InPlaceType, typename First, typename... Others>
+	template <class TypeList, 
+			  typename InPlaceType, 
+			  typename First, 
+			  typename... Others>
 	struct replacer<TypeList, InPlaceType, First, Others...> final
 	{
 		using type = typename replacer<
@@ -606,21 +654,29 @@ using replace_t = typename replace<Typelist, ToReplace, ReplaceWith>::type;
 /*-----------------------------------------------------------*/
 
 template <class Typelist, size_t Index, typename ReplaceWith>
-struct replace_at;
+class replace_at;
 
-template <template <typename...> class Typelist, size_t Index, typename ReplaceWith, typename... Args>
-struct replace_at<Typelist<Args...>, Index, ReplaceWith> final
+template <template <typename...> class Typelist, 
+		  size_t Index, 
+		  typename ReplaceWith, 
+		  typename... Args>
+class replace_at<Typelist<Args...>, Index, ReplaceWith> final
 {
-private:
 	static_assert (Index <= size_v<Typelist<Args...>>, "Cannot replace item out of range of TypeList!");
 
 	template <size_t CurrentIndex, class ListType, typename First>
-	using do_replace = std::conditional_t<CurrentIndex == Index, add_t<ListType, ReplaceWith>, add_t<ListType, First>>;
+	using do_replace = std::conditional_t<
+		CurrentIndex == Index, 
+		add_t<ListType, ReplaceWith>, 
+		add_t<ListType, First>>;
 
 	template <size_t CurrentIndex, class ListType, typename... ListArgs>
 	struct rebuilder;
 
-	template <size_t CurrentIndex, class ListType, typename First, typename... Others>
+	template <size_t CurrentIndex, 
+			  class ListType, 
+			  typename First, 
+			  typename... Others>
 	struct rebuilder<CurrentIndex, ListType, First, Others...> final
 	{
 		using type = typename rebuilder<
@@ -645,12 +701,14 @@ using replace_at_t = typename replace_at<Typelist, Index, ReplaceWith>::type;
 /*-----------------------------------------------------------*/
 
 template <class Typelist, size_t Index1, size_t Index2>
-struct swap_at;
+class swap_at;
 
-template <template <typename...> class Typelist, size_t Index1, size_t Index2, typename... Args>
-struct swap_at<Typelist<Args...>, Index1, Index2> final
+template <template <typename...> class Typelist, 
+		  size_t Index1, 
+		  size_t Index2, 
+		  typename... Args>
+class swap_at<Typelist<Args...>, Index1, Index2> final
 {
-private:
 	static_assert (Index1 != Index2, "Cannot swap elements at the same index!");
 
 	using OriginalList = Typelist<Args...>;
@@ -668,7 +726,10 @@ private:
 	template <size_t CurrentIndex, class ListType, typename...>
 	struct rebuilder;
 
-	template <size_t CurrentIndex, class ListType, typename First, typename... Others>
+	template <size_t CurrentIndex, 
+			  class ListType, 
+			  typename First, 
+			  typename... Others>
 	struct rebuilder<CurrentIndex, ListType, First, Others...> final
 	{
 		using type = typename rebuilder<
@@ -693,12 +754,14 @@ using swap_at_t = typename swap_at<Typelist, Index1, Index2>::type;
 /*-----------------------------------------------------------*/
 
 template <class Typelist, typename Type1, typename Type2>
-struct swap;
+class swap;
 
-template <template <typename...> class Typelist, typename Type1, typename Type2, typename... Args>
-struct swap<Typelist<Args...>, Type1, Type2> final
+template <template <typename...> class Typelist, 
+		  typename Type1, 
+		  typename Type2, 
+		  typename... Args>
+class swap<Typelist<Args...>, Type1, Type2> final
 {
-private:
 	static_assert (! std::is_same_v<Type1, Type2>, "Type1 and Type2 need to be different types");
 
 	using OriginalList = Typelist<Args...>;
@@ -718,18 +781,19 @@ using swap_t = typename swap<Typelist, Type1, Type2>::type;
 /*-----------------------------------------------------------*/
 
 template <class Typelist, typename ToCount>
-struct count;
+class count;
 
-template <template <typename...> class Typelist, typename ToCount, typename... Args>
-struct count<Typelist<Args...>, ToCount> final
+template <template <typename...> class Typelist, 
+		  typename ToCount, 
+		  typename... Args>
+class count<Typelist<Args...>, ToCount> final
 {
-private:
 	template <size_t Count, size_t CurrentIndex>
-	struct counter final
+	class counter final
 	{
-	private:
 		static constexpr const size_t thisValue = std::conditional_t<
-			std::is_same_v<ToCount, get_t<Typelist<Args...>, CurrentIndex>>,
+			std::is_same_v<ToCount, 
+						   get_t<Typelist<Args...>, CurrentIndex>>,
 			SizeConstant<Count + 1>,
 			SizeConstant<Count>>::value;
 
@@ -750,18 +814,18 @@ static constexpr const size_t count_v = count<Typelist, ToCount>::value;
 /*-----------------------------------------------------------*/
 
 template <class Typelist, template <typename> class UnaryPredicate>
-struct count_if;
+class count_if;
 
-template <template <typename...> class Typelist, template <typename> class UnaryPredicate, typename... Args>
-struct count_if<Typelist<Args...>, UnaryPredicate> final
+template <template <typename...> class Typelist, 
+		  template <typename> class UnaryPredicate, 
+		  typename... Args>
+class count_if<Typelist<Args...>, UnaryPredicate> final
 {
-private:
 	using Condition = TypeErasedUnaryPredicate<UnaryPredicate>;
 
 	template <size_t Count, size_t CurrentIndex>
-	struct counter final
+	class counter final
 	{
-	private:
 		using thisValue = std::conditional_t<
 			Condition::template met<get_t<Typelist<Args...>, CurrentIndex>>,
 			SizeConstant<Count + 1>,
@@ -782,9 +846,7 @@ template <class Typelist, template <typename> class UnaryPredicate>
 static constexpr const size_t count_if_v = count_if<Typelist, UnaryPredicate>::value;
 
 template <class Typelist, template <typename> class UnaryPredicate>
-struct count_if_not : SizeConstant<(size_v<Typelist> - count_if_v<Typelist, UnaryPredicate>)>
-{
-};
+struct count_if_not : SizeConstant<(size_v<Typelist> - count_if_v<Typelist, UnaryPredicate>)> {};
 
 template <class Typelist, template <typename> class UnaryPredicate>
 static constexpr const size_t count_if_not_v = count_if_not<Typelist, UnaryPredicate>::value;
@@ -792,12 +854,12 @@ static constexpr const size_t count_if_not_v = count_if_not<Typelist, UnaryPredi
 /*-----------------------------------------------------------*/
 
 template <class Typelist>
-struct remove_duplicates;
+class remove_duplicates;
 
-template <template <typename...> class Typelist, typename... Args>
-struct remove_duplicates<Typelist<Args...>> final
+template <template <typename...> class Typelist, 
+		  typename... Args>
+class remove_duplicates<Typelist<Args...>> final
 {
-private:
 	template <size_t CurrentIndex>
 	using CurrentType = get_t<Typelist<Args...>, CurrentIndex>;
 
@@ -835,10 +897,9 @@ template <class Typelist>
 struct contains_duplicates;
 
 template <template <typename...> class Typelist, typename... Args>
-struct contains_duplicates<Typelist<Args...>> final : std::bool_constant<
-														(size_v<Typelist<Args...>> != size_v<remove_duplicates_t<Typelist<Args...>>>)>
-{
-};
+struct contains_duplicates<Typelist<Args...>> final 
+	: std::bool_constant<(size_v<Typelist<Args...>> != size_v<remove_duplicates_t<Typelist<Args...>>>)>
+{};
 
 template <class Typelist>
 static constexpr const bool contains_duplicates_v = contains_duplicates<Typelist>::value;
@@ -846,12 +907,11 @@ static constexpr const bool contains_duplicates_v = contains_duplicates<Typelist
 /*-----------------------------------------------------------*/
 
 template <class Typelist>
-struct reverse;
+class reverse;
 
 template <template <typename...> class Typelist, typename... Args>
-struct reverse<Typelist<Args...>> final
+class reverse<Typelist<Args...>> final
 {
-private:
 	template <typename>
 	struct base;
 
@@ -870,7 +930,10 @@ private:
 		using type = T<Types...>;
 	};
 
-	template <template <typename...> class T, typename First, typename... Rest, typename... done>
+	template <template <typename...> class T, 
+			  typename First, 
+			  typename... Rest, 
+			  typename... done>
 	struct reverse_impl<T<First, Rest...>, T<done...>> final
 	{
 		using type = typename reverse_impl<T<Rest...>, T<First, done...>>::type;
