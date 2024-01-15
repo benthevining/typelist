@@ -6,6 +6,12 @@
 #include <memory>
 #include <functional>
 
+/** @mainpage Typelist
+	<b>Compile-time typelist for C++</b>
+
+	Look in test/test.cpp for some example usage of the API.
+ */
+
 /** @defgroup typelist Typelist library
 	A library providing metaprogramming features, primarily a compile-time typelist.
  */
@@ -1601,6 +1607,32 @@ template <template <class...> class Template, class... Args>
 struct is_specialization<Template<Args...>, Template> final : std::true_type {};
 /// @endcond
 }
+
+/** This boolean evaluates to true if the type being tested is a specialization of the given template.
+	
+	For example:
+	@code{.cpp}
+	using Vec = std::vector<int>;
+	static_assert (meta::is_specialization_v<Vec, std::vector>);
+	@endcode
+
+	@tparam ClassToTest The fully specialized type to test
+	@tparam Template A class template that ClassToTest may be a specialization of
+
+	@ingroup typelist
+ */
+template <class ClassToTest, template <class...> class Template>
+static constexpr const bool is_specialization_v = impl::is_specialization<ClassToTest, Template>::value;
+
+/** @concept specializes
+	@see is_specialization_v
+	@ingroup typelist
+ */
+template <class ClassToTest, template <class...> class Template>
+concept specializes = requires
+{
+	is_specialization_v<ClassToTest, Template>;
+};
 
 /** True if the specified type is a specialization of TypeList.
 	@ingroup typelist
