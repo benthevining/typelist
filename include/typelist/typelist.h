@@ -107,9 +107,7 @@ template <class Typelist, typename... TypesToFind>
 static constexpr const bool contains_v = contains<Typelist, TypesToFind...>::value;
 
 template <class Typelist, typename... TypesToFind>
-struct contains_or final : std::bool_constant<(contains_v<Typelist, TypesToFind> || ...)>
-{
-};
+struct contains_or final : std::bool_constant<(contains_v<Typelist, TypesToFind> || ...)> {};
 
 template <class Typelist, typename... TypesToFind>
 static constexpr const bool contains_or_v = contains_or<Typelist, TypesToFind...>::value;
@@ -898,7 +896,9 @@ struct contains_duplicates;
 
 template <template <typename...> class Typelist, typename... Args>
 struct contains_duplicates<Typelist<Args...>> final 
-	: std::bool_constant<(size_v<Typelist<Args...>> != size_v<remove_duplicates_t<Typelist<Args...>>>)>
+	: std::bool_constant<(
+		size_v<Typelist<Args...>> != size_v<remove_duplicates_t<Typelist<Args...>>>
+	)>
 {};
 
 template <class Typelist>
@@ -1379,7 +1379,7 @@ public:
 		@see construct()
 	 */
 	template <size_t Index, typename... Args>
-	static std::unique_ptr<at<Index>> make_unique (Args&&... args) noexcept (noexcept (at<Index> (std::forward<Args> (args)...)))
+	static std::unique_ptr<at<Index>> make_unique (Args&&... args) noexcept (noexcept (std::make_unique<at<Index>> (std::forward<Args> (args)...)))
 	{
 		return std::make_unique<at<Index>> (std::forward<Args> (args)...);
 	}
@@ -1595,14 +1595,10 @@ using make_type_list_from_t = typename impl::make_type_list_from<Args...>::type;
 namespace impl {
 /// @cond
 template <class T, template <class...> class Template>
-struct is_specialization final : std::false_type
-{
-};
+struct is_specialization final : std::false_type {};
 
 template <template <class...> class Template, class... Args>
-struct is_specialization<Template<Args...>, Template> final : std::true_type
-{
-};
+struct is_specialization<Template<Args...>, Template> final : std::true_type {};
 /// @endcond
 }
 
@@ -1619,4 +1615,4 @@ static constinit const bool is_typelist = impl::is_specialization<T, TypeList>::
 template <typename T>
 concept IsTypeList = is_typelist<T>;
 
-}
+} // namespace meta
